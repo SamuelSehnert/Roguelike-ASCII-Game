@@ -1,0 +1,13 @@
+[X] when equip or use item, -1 from inventory
+[ ] Implement non-weapon non-armor items; bandaid. money, etc
+[ ] attaking + A* max pathfinding to determine collisions
+[X] interact with spacebar to do things
+[X] inventory cleanup
+[X] Refresh when you interact/attack
+[X] actions take action points to preform
+[ ] make so you can't see other rooms before entering them
+[ ] overall optimization and refractor
+[ ] Better entity spawning
+    - generate random number within bounds of map
+    - check to see if it lands on a collision
+[ ] Character creation and attribute allocation
