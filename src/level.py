@@ -217,34 +217,25 @@ class Level:
             entity = self.target
             if key == 97:
                 self.targetLeft(entity)
-                self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.entities["player"].x, self.entities["player"].y)
+                self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attackList[self.currentTarget], self.entities["player"].x, self.entities["player"].y)
                 self.alterInfoBar(self.attackList[self.currentTarget])
 
-                for i in self.layout:
-                    for item in i:
-                        item.vistited = False
-
+                self.resetAttackLayout()
+                
                 return
             elif key == 100:
                 self.targetRight(entity)
-                self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.entities["player"].x, self.entities["player"].y)
+                self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attackList[self.currentTarget], self.entities["player"].x, self.entities["player"].y)
                 self.alterInfoBar(self.attackList[self.currentTarget])
 
-                for i in self.layout:
-                    for item in i:
-                        item.vistited = False
+                self.resetAttackLayout()
 
                 return
             elif key == 32:
-                self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.entities["player"].x, self.entities["player"].y)
-
-                for i in self.layout:
-                    for item in i:
-                        item.vistited = False
-
-                self.entities["player"].stats["AP"][0] -= self.entities["player"].calculateWeaponAPCost()
-                self.entities["player"].attack(self.attackList[self.currentTarget])
-                self.alterInfoBar(self.attackList[self.currentTarget])
+                if self.valid:
+                    self.entities["player"].stats["AP"][0] -= self.entities["player"].calculateWeaponAPCost()
+                    self.entities["player"].attack(self.attackList[self.currentTarget])
+                    self.alterInfoBar(self.attackList[self.currentTarget])
                 return
 
 
@@ -524,11 +515,17 @@ class Level:
         self.attackActive = True
         nonPlayerNPC = self.entities.copy()
         del nonPlayerNPC["player"]
+
         for single in nonPlayerNPC.values():
             self.attackList.append(single)
+
         self.target = VISUAL.Crosshair(self.attackList[self.currentTarget].x, self.attackList[self.currentTarget].y)
         self.target.standingOn = self.layout[self.target.y][self.target.x]
         self.layout[self.target.y][self.target.x] = self.target
+
+        self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attackList[self.currentTarget], self.entities["player"].x, self.entities["player"].y)
+        self.resetAttackLayout()
+
         self.alterInfoBar(self.target.standingOn)
 
     def deactivateAttackMode(self):
@@ -536,6 +533,16 @@ class Level:
         self.attackActive = False
         self.target = None
         self.alterInfoBar(self.entities["player"])
+
+    def resetAttackLayout(self):
+        for i in self.layout:
+            for item in i:
+                item.visited = False
+                item.previous = None
+                if item.standingOn != None:
+                    item.standingOn.visited = False
+                    item.standingOn.previous = None
+
 
 
 

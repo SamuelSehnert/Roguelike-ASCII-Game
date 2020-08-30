@@ -6,6 +6,8 @@ class Tile:
         self.collide = collide
         self.interact = interact
 
+        self.standingOn = None
+
         self.previous = None #used for BFS backtracking
         self.visited = False
         self.x = 0
