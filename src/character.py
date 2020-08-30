@@ -11,8 +11,8 @@ class Player:
 
         self.stats = {"HP":[health, health], "AP":[AP,AP], "DF":self.calculateDF(),"DMG":self.calculateDMG()}
 
-        self.x = 25
-        self.y = 4
+        self.x = 5
+        self.y = 2
 
         self.standingOn = None
         self.collide = collide
@@ -166,12 +166,17 @@ class NPC:
 
         self.klass = klass
 
-        self.x = self.randomPos()
-        self.y = self.randomPos()
+        #self.x = self.randomPos()
+        #self.y = self.randomPos()
+
+        self.x = 5
+        self.y = 5
 
 
         self.standingOn = None
         self.collide = collide
+
+        self.visited = False
 
         self.interact = True
 

@@ -41,10 +41,14 @@ class Crosshair:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+        self.symbol = "X"
+        
         self.standingOn = None
+        self.collide = False
 
     def __repr__(self):
-        return "X"
+        return self.symbol
 
 
 

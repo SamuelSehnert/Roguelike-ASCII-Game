@@ -4,11 +4,11 @@ import character as CHARACTER
 
 def main(screen):
     player = CHARACTER.Player("Sam", 10, 100, False)
-    enemy = CHARACTER.NPC("Jose", "bandit", 5, 5, True)
+    #enemy = CHARACTER.NPC("Jose", "bandit", 5, 5, True)
     npc = CHARACTER.NPC("Bobbu", "bandit", 3, 3, True)
 
-    level = lv.Level("level_1.txt", {"player":player, 
-                                     "bandit":enemy,
+    level = lv.Level("pathfindingTest.txt", {"player":player, 
+                                     #"bandit":enemy,
                                      "bandit2":npc})
     c = ""
     while c != 27:

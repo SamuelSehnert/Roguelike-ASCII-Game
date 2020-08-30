@@ -6,6 +6,11 @@ class Tile:
         self.collide = collide
         self.interact = interact
 
+        self.previous = None #used for BFS backtracking
+        self.visited = False
+        self.x = 0
+        self.y = 0
+
         if interact == "CONTAINER": #container
             self.open = False
             self.status = "LOCKED"

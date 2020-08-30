@@ -2,6 +2,8 @@ import tiles as TILES
 import visual as VISUAL
 import character as CHARACTER
 
+import pathfinding
+
 from copy import copy
 
 class Level:
@@ -36,6 +38,7 @@ class Level:
         self.target = None
         self.currentTarget = 0
         self.attackList = []
+        self.valid = None
 
     def randomName(self):
         """
@@ -54,10 +57,13 @@ class Level:
         levelFile = open("../art/" + fileName, "r")
         levelList = []
 
-        for row in levelFile.readlines():
+        for levelY, row in enumerate(levelFile.readlines()):
             line = []
-            for item in row.strip():
-                line.append(copy(TILES.all_tiles[item]))
+            for levelX, item in enumerate(row.strip()):
+                tile = copy(TILES.all_tiles[item])
+                tile.x = levelX
+                tile.y = levelY
+                line.append(tile)
             levelList.append(line)
 
         levelFile.close()
@@ -99,6 +105,11 @@ class Level:
 
             total2 = total - (len("Health: " + str(entity.stats["HP"])) + len("Action Points: " + str(entity.stats["AP"])))
             string_list.append("Health: " + str(entity.stats["HP"]) + " " * total2 + "Action Points: " + str(entity.stats["AP"]))
+
+            if self.valid:
+                string_list.append("YUP")
+            else:
+                string_list.append("NO")
 
         elif isinstance(entity, TILES.Tile):
             total3 = total - (len("Health: " + str(self.entities["player"].stats["HP"])) + len("Action Points: " + str(self.entities["player"].stats["AP"])))
@@ -201,15 +212,36 @@ class Level:
             entity = self.visual
         elif self.interactiveActive:
             entity = self.interact
+
         elif self.attackActive:
             entity = self.target
             if key == 97:
                 self.targetLeft(entity)
+                self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.entities["player"].x, self.entities["player"].y)
+                self.alterInfoBar(self.attackList[self.currentTarget])
+
+                for i in self.layout:
+                    for item in i:
+                        item.vistited = False
+
                 return
             elif key == 100:
                 self.targetRight(entity)
+                self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.entities["player"].x, self.entities["player"].y)
+                self.alterInfoBar(self.attackList[self.currentTarget])
+
+                for i in self.layout:
+                    for item in i:
+                        item.vistited = False
+
                 return
             elif key == 32:
+                self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.entities["player"].x, self.entities["player"].y)
+
+                for i in self.layout:
+                    for item in i:
+                        item.vistited = False
+
                 self.entities["player"].stats["AP"][0] -= self.entities["player"].calculateWeaponAPCost()
                 self.entities["player"].attack(self.attackList[self.currentTarget])
                 self.alterInfoBar(self.attackList[self.currentTarget])
@@ -268,8 +300,6 @@ class Level:
                             tile.collide = True
                 self.alterInfoBar(self.interact.standingOn)
 
-
-        
 
 
 
