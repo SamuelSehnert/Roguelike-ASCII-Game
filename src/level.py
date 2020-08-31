@@ -21,6 +21,8 @@ class Level:
         self.infoBar = None
         self.alterInfoBar(self.entities["player"])
 
+        self.textBox = ["","","",""]
+
         self.initEntities(self.entities)
 
         self.characterMenu = False
@@ -165,6 +167,15 @@ class Level:
 
 
         lis = []
+
+        lis.append("-"*50)
+
+        for line in self.textBox:
+            lis.append(" | " + line + " | ")
+
+        lis.append("-"*50)
+        lis.append("\n")
+
         lis.append("-" * (len(self.levelName) + 2))
         lis.append("|" + self.levelName + "|")
         lis.append("-" * (len(self.levelName) + 2))
