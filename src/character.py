@@ -166,11 +166,11 @@ class NPC:
 
         self.klass = klass
 
-        #self.x = self.randomPos()
-        #self.y = self.randomPos()
+        self.x = self.randomPos()
+        self.y = self.randomPos()
 
-        self.x = 7
-        self.y = 1
+   #     self.x = 7
+   #     self.y = 1
 
 
         self.standingOn = None

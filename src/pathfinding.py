@@ -1,4 +1,4 @@
-import queue_array
+import queue
 from visual import Crosshair
 from character import Player
 
@@ -14,15 +14,16 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
     x is the current x position of the player
     y is the current y position of the player
     """
-    Q = queue_array.Queue(1000)
+    
+    Q = queue.Queue()
 
     startingTile.previous = None
 
-    Q.enqueue(layout[y][x])
+    Q.put(layout[y][x])
 
-    while Q.size() > 0:
+    while Q.qsize() > 0:
 
-        current = Q.peek()
+        current = Q.get()
         current.visited = True
         y = current.y
         x = current.x
@@ -33,7 +34,7 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
                 current = layout[y + 1][x]
                 break
             elif not layout[y + 1][x].visited:
-                Q.enqueue(layout[y + 1][x])
+                Q.put(layout[y + 1][x])
                 layout[y + 1][x].previous = current
                 layout[y + 1][x].visited = True
 
@@ -43,7 +44,7 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
                 current = layout[y - 1][x]
                 break
             elif not layout[y - 1][x].visited:
-                Q.enqueue(layout[y - 1][x])
+                Q.put(layout[y - 1][x])
                 layout[y - 1][x].previous = current
                 layout[y - 1][x].visited = True
 
@@ -54,7 +55,7 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
                 break
 
             elif not layout[y][x + 1].visited:
-                Q.enqueue(layout[y][x + 1])
+                Q.put(layout[y][x + 1])
                 layout[y][x + 1].previous = current
                 layout[y][x + 1].visited = True
 
@@ -65,7 +66,7 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
                 break
 
             elif not layout[y][x - 1].visited:
-                Q.enqueue(layout[y][x - 1])
+                Q.put(layout[y][x - 1])
                 layout[y][x - 1].previous = current
                 layout[y][x - 1].visited = True
 
@@ -76,7 +77,7 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
                 break
 
             elif not layout[y - 1][x - 1].visited:
-                Q.enqueue(layout[y - 1][x - 1])
+                Q.put(layout[y - 1][x - 1])
                 layout[y - 1][x - 1].previous = current
                 layout [y - 1][x - 1].visited = True
 
@@ -87,7 +88,7 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
                 break
 
             elif not layout[y + 1][x - 1].visited:
-                Q.enqueue(layout[y + 1][x - 1])
+                Q.put(layout[y + 1][x - 1])
                 layout[y + 1][x - 1].previous = current
                 layout [y + 1][x - 1].visited = True
 
@@ -98,7 +99,7 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
                 break
 
             elif not layout[y - 1][x + 1].visited:
-                Q.enqueue(layout[y - 1][x + 1])
+                Q.put(layout[y - 1][x + 1])
                 layout[y - 1][x + 1].previous = current
                 layout [y - 1][x + 1].visited = True
 
@@ -109,15 +110,11 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
                 break
 
             elif not layout[y + 1][x + 1].visited:
-                Q.enqueue(layout[y + 1][x + 1])
+                Q.put(layout[y + 1][x + 1])
                 layout[y + 1][x + 1].previous = current
                 layout [y + 1][x + 1].visited = True
-                
-        Q.dequeue()
-
 
     while True:
-        #current.symbol = "!"
         if current.collide == True:
             return False
 
