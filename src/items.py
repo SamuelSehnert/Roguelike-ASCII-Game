@@ -52,16 +52,28 @@ class General:
 
 
 
+level_1_weapons = {"fists": Weapon(name="Fists", klass="MELEE", raw_damage=1, raw_range=1, ammoCap=None, APCost=1, weight=0, value=0),
+                   "rusty pistol": Weapon(name="Rusty Pistol", klass="PISTOL", raw_damage=2, raw_range=5, ammoCap=6, APCost=2, weight=4, value=5),
+                   "small knife": Weapon(name="Small Knife", klass="MELEE", raw_damage=2, raw_range=1, ammoCap=None, APCost=1, weight=2, value=2),
+                  }
+
+level_2_weapons = {"brass knuckes": Weapon(name="Brass Knuckles", klass="MELEE", raw_damage=3, raw_range=1, ammoCap=None, APCost=2, weight=4, value=5),
+
+                  }
 
 
-all_weapons = {"fists": Weapon(name="Fists", klass="MELEE", raw_damage=1, raw_range=1, ammoCap=None, APCost=1, weight=0, value=0),
-               "rusty pistol": Weapon(name="Rusty Pistol", klass="PISTOL", raw_damage=2, raw_range=5, ammoCap=6, APCost=2, weight=4, value=5),
-              }
+all_weapons = {**level_1_weapons, **level_2_weapons}
 
-all_armor = {"underwear": Armor(name="Underwear", klass = "LIGHT", raw_defence=0, weight=0, value=0),
-             "common clothes": Armor(name="Common Clothes", klass="LIGHT", raw_defence=2, weight=1, value=2),
-            }
 
-all_items = {**all_weapons, **all_armor}
 
+level_1_armor = {"underwear": Armor(name="Underwear", klass = "LIGHT", raw_defence=0, weight=0, value=0),
+                 "common clothes": Armor(name="Common Clothes", klass="LIGHT", raw_defence=2, weight=1, value=2),
+                }
+
+all_armor = {**level_1_armor}
+
+all_general = {"bandage": General(name="Bandage", klass="HEAL"),
+                }
+
+all_items = {**all_weapons, **all_armor, **all_general}
 
