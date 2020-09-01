@@ -1,3 +1,5 @@
+import items as ITEMS
+from random import choice
 
 class Tile:
     def __init__(self, name, symbol, collide, interact=None, canAttack=False):
@@ -17,10 +19,12 @@ class Tile:
         self.y = 0
 
         if interact == "CONTAINER": #container
+            self.cap = 4
             self.open = False
             self.status = "LOCKED"
             if self.status == "LOCKED":
                 self.lockLevel = 10
+                self.level = self.lockLevel // 10
             self.inventory = self.initContainer()
 
         elif interact == "DOOR":
@@ -52,7 +56,15 @@ class Tile:
 
 
     def initContainer(self):
-        return {}
+        contains = {}
+        """
+        for i in range(self.cap):
+            addition = choice(ITEMS.all_items)
+            contains[addition] = ITEMS.all_items[addition]
+        """
+
+        return contains
+            
 
 
 
