@@ -5,13 +5,16 @@
 [X] inventory cleanup
 [X] Refresh when you interact/attack
 [X] actions take action points to preform
-[ ] make so you can't see other rooms before entering them
+[X] make so you can't see other rooms before entering them
 [ ] overall optimization and refractor
 [ ] Better entity spawning
     - generate random number within bounds of map
     - check to see if it lands on a collision
 [ ] Character creation and attribute allocation
-[ ] index error if no enemies present
-[ ] Dialogue box
+[X] index error if no enemies present
+[X] Dialogue box
 [ ] Dialogue in general...
-[ ] Make so that the camera follows the player while the level moves... if possible...
+[X] Make so that the camera follows the player while the level moves... if possible...
+[ ] Enemy turns and sort-of AI
+[ ] Range for attacking
+[ ] Inventories for containers
