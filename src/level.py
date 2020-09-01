@@ -563,9 +563,11 @@ class Level:
             for item in i:
                 item.visited = False
                 item.previous = None
+                item.visible = False
                 if item.standingOn != None:
                     item.standingOn.visited = False
                     item.standingOn.previous = None
+                    item.standingOn.visible = False
 
 
     def alterTextBox(self, text):
