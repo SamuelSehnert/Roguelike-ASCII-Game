@@ -5,7 +5,9 @@ class Tile:
         self.symbol = symbol
         self.collide = collide
         self.interact = interact
+
         self.canAttack = canAttack
+        self.visisble = False
 
         self.standingOn = None
 
@@ -59,6 +61,6 @@ class Tile:
 all_tiles = {" ": Tile("Air", " ", True),
              ".": Tile("Floor", ".", False),
              "#": Tile("Wall", "#", True),
-             "|": Tile("Closed Door", "|", True, interact="DOOR"),
+             "|": Tile("Door", "|", True, interact="DOOR"),
              "C": Tile("Chest", "C", True, interact="CONTAINER"),
              }

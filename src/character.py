@@ -13,6 +13,9 @@ class Player:
 
         self.stats = {"HP":[health, health], "AP":[AP,AP], "DF":self.calculateDF(),"DMG":self.calculateDMG()}
 
+        self.visRangeY = 3
+        self.visRangeX = self.visRangeY * 2
+
         self.x = 5
         self.y = 7
 
@@ -197,8 +200,8 @@ class NPC:
             return "B"
 
     def randomPosX(self):
-        return randint(0, 48)
+        return randint(0, 45)
 
     def randomPosY(self):
-        return randint(0, 9)
+        return randint(0, 7)
 

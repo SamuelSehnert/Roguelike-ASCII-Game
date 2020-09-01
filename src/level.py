@@ -171,15 +171,18 @@ class Level:
         elif self.characterMenu:
             return self.entities["player"].characterMenu(self.selectedItem)
 
+        total = len(self.layout[len(self.layout) - 1])
 
         lis = []
 
-        lis.append("-"*50)
+        lis.append("-"*total)
 
         for line in self.textBox:
-            lis.append(" | " + line + " | ")
+            total -= (len(line) + 6)
+            lis.append("|  " + line + " " * total + "  |")
+            total = len(self.layout[len(self.layout) - 1])
 
-        lis.append("-"*50)
+        lis.append("-"*total)
         lis.append("\n" * 2)
 
         lis.append("-" * (len(self.levelName) + 2))
@@ -281,22 +284,27 @@ class Level:
                     if tile.status == "LOCKED":
                         self.entities["player"].stats["AP"][0] -= 1
                         tile.status = "UNLOCKED"
+                        self.alterTextBox("You manage to unlock the container")
                     else:
                         search = True
+                        self.alterTextBox("You search the container")
                 elif tile.interact == "DOOR":
                     if tile.status == "LOCKED":
                         self.entities["player"].stats["AP"][0] -= 1
                         tile.status = "UNLOCKED"
+                        self.alterTextBox("You manage to unlock the door")
                     elif tile.status == "UNLOCKED":
                         tile.open = not tile.open
                         if tile.open:
                             self.entities["player"].stats["AP"][0] -= 1
                             tile.symbol = "/"
                             tile.collide = False
+                            self.alterTextBox("You open the door")
                         elif not tile.open:
                             self.entities["player"].stats["AP"][0] -= 1
                             tile.symbol = "|"
                             tile.collide = True
+                            self.alterTextBox("You close the door")
                 self.alterInfoBar(self.interact.standingOn)
 
 

@@ -12,3 +12,6 @@
     - check to see if it lands on a collision
 [ ] Character creation and attribute allocation
 [ ] index error if no enemies present
+[ ] Dialogue box
+[ ] Dialogue in general...
+[ ] Make so that the camera follows the player while the level moves... if possible...
