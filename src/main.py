@@ -17,10 +17,10 @@ def main(screen):
         full = level.refreshLayout()
         if level.instructions or level.characterMenu:
             for x,i in enumerate(full):
-                screen.addstr(x+10, 25, i)
+                screen.addstr(x+5, 25, i)
         else:
             for x, i in enumerate(full):
-                screen.addstr(x+10, 50, i)
+                screen.addstr(x+5, 50, i)
 
         screen.refresh()
         c = screen.getch()

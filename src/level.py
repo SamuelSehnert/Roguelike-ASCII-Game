@@ -174,7 +174,7 @@ class Level:
             lis.append(" | " + line + " | ")
 
         lis.append("-"*50)
-        lis.append("\n")
+        lis.append("\n" * 2)
 
         lis.append("-" * (len(self.levelName) + 2))
         lis.append("|" + self.levelName + "|")
