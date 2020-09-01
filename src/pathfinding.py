@@ -14,6 +14,8 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
     x is the current x position of the player
     y is the current y position of the player
     """
+    if isinstance(target, Player):
+        return True
     
     Q = queue.Queue()
 
@@ -114,7 +116,7 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
                 layout[y + 1][x + 1].previous = current
                 layout [y + 1][x + 1].visited = True
 
-    while True:
+    while current.previous != None:
         if current.collide == True:
             return False
 
@@ -122,5 +124,6 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
             return True
 
         current = current.previous
+
     return True
 

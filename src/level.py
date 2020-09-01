@@ -18,9 +18,6 @@ class Level:
 
         self.entities = entities
 
-        self.infoBar = None
-        self.alterInfoBar(self.entities["player"])
-
         self.textBox = ["","","",""]
 
         self.initEntities(self.entities)
@@ -37,10 +34,10 @@ class Level:
         self.interact = None
 
         self.attackActive = False
-        self.target = None
-        self.currentTarget = 0
-        self.attackList = []
         self.valid = None
+
+        self.infoBar = None
+        self.alterInfoBar(self.entities["player"])
 
     def randomName(self):
         """
@@ -81,8 +78,17 @@ class Level:
             coordinates are on a valid tile
         """
         for single in entities.values():
-            single.standingOn = self.layout[single.y][single.x]
-            self.layout[single.y][single.x] = single
+            if isinstance(single, CHARACTER.NPC):
+                while True:
+                    single.y = single.randomPosY()
+                    single.x = single.randomPosX()
+                    if not self.layout[single.y][single.x].collide:
+                        single.standingOn = self.layout[single.y][single.x]
+                        self.layout[single.y][single.x] = single
+                        break
+            else:
+                single.standingOn = self.layout[single.y][single.x]
+                self.layout[single.y][single.x] = single
 
 
     def alterInfoBar(self, entity):
@@ -108,11 +114,6 @@ class Level:
             total2 = total - (len("Health: " + str(entity.stats["HP"])) + len("Action Points: " + str(entity.stats["AP"])))
             string_list.append("Health: " + str(entity.stats["HP"]) + " " * total2 + "Action Points: " + str(entity.stats["AP"]))
 
-            if self.valid:
-                string_list.append("YUP")
-            else:
-                string_list.append("NO")
-
         elif isinstance(entity, TILES.Tile):
             total3 = total - (len("Health: " + str(self.entities["player"].stats["HP"])) + len("Action Points: " + str(self.entities["player"].stats["AP"])))
             string_list.append("Health: " + str(self.entities["player"].stats["HP"]) + " " * total3 + "Action Points: " + str(self.entities["player"].stats["AP"]))
@@ -134,6 +135,11 @@ class Level:
 
             else:
                 string_list.append(str(entity.name))
+        
+        if self.valid and self.attackActive:
+            string_list.append("Clear Shot")
+        elif not self.valid and self.attackActive:
+            string_list.append("Shot Blocked")
 
         self.infoBar = string_list
         #self.infoBar = []
@@ -217,38 +223,6 @@ class Level:
             self.selectedItem = 0
             self.characterMenu = False
             return
-            
-        #checks for current active state and changes entity based on it
-        if self.visualActive:
-            entity = self.visual
-        elif self.interactiveActive:
-            entity = self.interact
-
-        elif self.attackActive:
-            entity = self.target
-            if key == 97:
-                self.targetLeft(entity)
-                self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attackList[self.currentTarget], self.entities["player"].x, self.entities["player"].y)
-                self.alterInfoBar(self.attackList[self.currentTarget])
-
-                self.resetAttackLayout()
-                
-                return
-            elif key == 100:
-                self.targetRight(entity)
-                self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attackList[self.currentTarget], self.entities["player"].x, self.entities["player"].y)
-                self.alterInfoBar(self.attackList[self.currentTarget])
-
-                self.resetAttackLayout()
-
-                return
-            elif key == 32:
-                if self.valid:
-                    self.entities["player"].stats["AP"][0] -= self.entities["player"].calculateWeaponAPCost()
-                    self.entities["player"].attack(self.attackList[self.currentTarget])
-                    self.alterInfoBar(self.attackList[self.currentTarget])
-                return
-
 
         # go into this if the character menu is currently open
         if self.characterMenu:
@@ -264,6 +238,28 @@ class Level:
                 self.entities["player"].useItem(self.selectedItem)
             return
 
+            
+        #checks for current active state and changes entity based on it
+        if self.visualActive:
+            entity = self.visual
+        elif self.interactiveActive:
+            entity = self.interact
+        elif self.attackActive:
+            entity = self.attack
+            if key == 32:
+                if self.valid and entity.standingOn.canAttack:
+                    self.entities["player"].stats["AP"][0] -= self.entities["player"].calculateWeaponAPCost()
+                    self.entities["player"].attack(self.attack.standingOn)
+                    self.alterInfoBar(self.attack.standingOn)
+                    self.alterTextBox("You hit " + str(self.attack.standingOn.name) + " with " + str(self.entities["player"].calculateDMG()) + " damage")
+
+                elif self.valid and not entity.standingOn.canAttack:
+                    self.entities["player"].stats["AP"][0] -= self.entities["player"].calculateWeaponAPCost()
+                    self.alterInfoBar(self.attack.standingOn)
+                    self.alterTextBox("You hit the " + str(entity.standingOn.name) + "... It did nothing...")
+                return
+
+   
         #default movement for any entity
         if key == 119:
             self.charUp(entity)
@@ -276,8 +272,9 @@ class Level:
         elif key == 114: #r: to be deleted. only for debugging purposes
             self.nextTurn()
 
+
         #interact with tile/NPC that "i" is currently on
-        elif key == 32 and self.interactiveActive:
+        if key == 32 and self.interactiveActive:
             if self.interact.standingOn.interact:
                 tile = self.interact.standingOn
                 if tile.interact == "CONTAINER":
@@ -342,6 +339,17 @@ class Level:
             self.layout[entity.y][entity.x] = entity
             self.alterInfoBar(self.visual.standingOn)
 
+        elif isinstance(entity, VISUAL.Crosshair) and self.attack.y - 1 >= 0:
+            self.layout[entity.y][entity.x] = entity.standingOn
+            entity.move("w")
+            entity.standingOn = self.layout[entity.y][entity.x]
+            self.layout[entity.y][entity.x] = entity
+
+            self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attack.standingOn, self.entities["player"].x, self.entities["player"].y)
+            self.resetAttackLayout()
+
+            self.alterInfoBar(self.attack.standingOn)
+
         elif isinstance(entity, VISUAL.Interact) and self.interact.y - 1 >= self.entities["player"].y - 1:
             self.layout[entity.y][entity.x] = entity.standingOn
             entity.move("w")
@@ -371,6 +379,17 @@ class Level:
             entity.standingOn = self.layout[entity.y][entity.x]
             self.layout[entity.y][entity.x] = entity
             self.alterInfoBar(self.visual.standingOn)
+
+        elif isinstance(entity, VISUAL.Crosshair) and self.attack.y + 1 <= len(self.layout) - 1:
+            self.layout[entity.y][entity.x] = entity.standingOn
+            entity.move("s")
+            entity.standingOn = self.layout[entity.y][entity.x]
+            self.layout[entity.y][entity.x] = entity
+
+            self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attack.standingOn, self.entities["player"].x, self.entities["player"].y)
+            self.resetAttackLayout()
+
+            self.alterInfoBar(self.attack.standingOn)
 
         elif isinstance(entity, VISUAL.Interact) and self.interact.y + 1 <= self.entities["player"].y + 1:
             self.layout[entity.y][entity.x] = entity.standingOn
@@ -402,6 +421,17 @@ class Level:
             self.layout[entity.y][entity.x] = entity
             self.alterInfoBar(self.visual.standingOn)
 
+        elif isinstance(entity, VISUAL.Crosshair) and self.attack.x - 1 >= 0:
+            self.layout[entity.y][entity.x] = entity.standingOn
+            entity.move("a")
+            entity.standingOn = self.layout[entity.y][entity.x]
+            self.layout[entity.y][entity.x] = entity
+
+            self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attack.standingOn, self.entities["player"].x, self.entities["player"].y)
+            self.resetAttackLayout()
+
+            self.alterInfoBar(self.attack.standingOn)
+
         elif isinstance(entity, VISUAL.Interact) and self.interact.x - 1 >= self.entities["player"].x - 1:
             self.layout[entity.y][entity.x] = entity.standingOn
             entity.move("a")
@@ -432,6 +462,17 @@ class Level:
             self.layout[entity.y][entity.x] = entity
             self.alterInfoBar(self.visual.standingOn)
 
+        elif isinstance(entity, VISUAL.Crosshair) and entity.x + 1 <= len(self.layout[entity.y]) - 1:
+            self.layout[entity.y][entity.x] = entity.standingOn
+            entity.move("d")
+            entity.standingOn = self.layout[entity.y][entity.x]
+            self.layout[entity.y][entity.x] = entity
+
+            self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attack.standingOn, self.entities["player"].x, self.entities["player"].y)
+            self.resetAttackLayout()
+
+            self.alterInfoBar(self.attack.standingOn)
+
         elif isinstance(entity, VISUAL.Interact) and self.interact.x + 1 <= self.entities["player"].x + 1:
             self.layout[entity.y][entity.x] = entity.standingOn
             entity.move("d")
@@ -453,37 +494,6 @@ class Level:
                     return False
         else:
             return False
-
-    def targetLeft(self, entity):
-        self.currentTarget -= 1
-        if self.currentTarget < 0:
-            self.currentTarget = len(self.attackList) - 1
-
-        self.layout[entity.y][entity.x] = entity.standingOn
-
-        self.target.x = self.attackList[self.currentTarget].x
-        self.target.y = self.attackList[self.currentTarget].y
-
-        entity.standingOn = self.layout[entity.y][entity.x]
-        self.layout[entity.y][entity.x] = entity
-
-        self.alterInfoBar(entity.standingOn)
-
-    def targetRight(self, entity):
-        self.currentTarget += 1
-        if self.currentTarget > len(self.attackList) - 1:
-            self.currentTarget = 0
-
-        self.layout[entity.y][entity.x] = entity.standingOn
-
-        self.target.x = self.attackList[self.currentTarget].x
-        self.target.y = self.attackList[self.currentTarget].y
-
-        entity.standingOn = self.layout[entity.y][entity.x]
-        self.layout[entity.y][entity.x] = entity
-
-        self.alterInfoBar(entity.standingOn)
-
 
     def nextTurn(self):
         for char in self.entities.values():
@@ -523,26 +533,21 @@ class Level:
         self.alterInfoBar(self.entities["player"])
 
     def attackMode(self):
+
         self.attackActive = True
-        nonPlayerNPC = self.entities.copy()
-        del nonPlayerNPC["player"]
+        self.attack = VISUAL.Crosshair(self.entities["player"].x, self.entities["player"].y)
+        self.attack.standingOn = self.layout[self.attack.y][self.attack.x]
+        self.layout[self.attack.y][self.attack.x] = self.attack
 
-        for single in nonPlayerNPC.values():
-            self.attackList.append(single)
-
-        self.target = VISUAL.Crosshair(self.attackList[self.currentTarget].x, self.attackList[self.currentTarget].y)
-        self.target.standingOn = self.layout[self.target.y][self.target.x]
-        self.layout[self.target.y][self.target.x] = self.target
-
-        self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attackList[self.currentTarget], self.entities["player"].x, self.entities["player"].y)
+        self.valid = pathfinding.validPath(self.layout, self.entities["player"].standingOn, self.attack.standingOn, self.entities["player"].x, self.entities["player"].y)
         self.resetAttackLayout()
 
-        self.alterInfoBar(self.target.standingOn)
+        self.alterInfoBar(self.entities["player"])
+
 
     def deactivateAttackMode(self):
-        self.layout[self.target.y][self.target.x] = self.target.standingOn
+        self.layout[self.attack.y][self.attack.x] = self.attack.standingOn
         self.attackActive = False
-        self.target = None
         self.alterInfoBar(self.entities["player"])
 
     def resetAttackLayout(self):
@@ -553,6 +558,16 @@ class Level:
                 if item.standingOn != None:
                     item.standingOn.visited = False
                     item.standingOn.previous = None
+
+
+    def alterTextBox(self, text):
+        if len(self.textBox) >= 4:
+            self.textBox.pop(0)
+            self.textBox.append(text)
+        else:
+            self.textBox.append(text)
+        return
+
 
 
 

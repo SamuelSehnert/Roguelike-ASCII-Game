@@ -50,6 +50,17 @@ class Crosshair:
     def __repr__(self):
         return self.symbol
 
+    def move(self, moveDirection):
+        if moveDirection == "w":
+            self.y -= 1
+        elif moveDirection == "s":
+            self.y += 1
+        elif moveDirection == "a":
+            self.x -= 1
+        elif moveDirection == "d":
+            self.x += 1
+
+
 
 
 

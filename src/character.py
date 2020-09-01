@@ -1,6 +1,8 @@
 from random import randint
 import items as ITEMS
 
+import level as LEVEL
+
 
 class Player:
     def __init__(self, name, health, AP,  collide=True):
@@ -12,10 +14,12 @@ class Player:
         self.stats = {"HP":[health, health], "AP":[AP,AP], "DF":self.calculateDF(),"DMG":self.calculateDMG()}
 
         self.x = 5
-        self.y = 1
+        self.y = 7
 
         self.standingOn = None
         self.collide = collide
+
+        self.canAttack = True
 
         self.interact = False
 
@@ -23,7 +27,6 @@ class Player:
         self.inventory = {"rusty pistol": [ITEMS.all_items["rusty pistol"], 1],
                           "common clothes": [ITEMS.all_items["common clothes"], 1],
                           } 
-
 
     def __repr__(self):
         return "@"
@@ -163,15 +166,18 @@ class NPC:
         self.stats = {"HP":[health, health], "AP":[AP,AP]}
 
         self.isHostile = isHostile
+        self.canAttack = True
 
         self.klass = klass
 
-        self.x = self.randomPos()
-        self.y = self.randomPos()
+        self.x = 0
+        self.y = 0
 
-   #     self.x = 7
-   #     self.y = 1
+ #       self.x = self.randomPos()
+ #       self.y = self.randomPos()
 
+#        self.x = 4
+#        self.y = 1
 
         self.standingOn = None
         self.collide = collide
@@ -190,6 +196,9 @@ class NPC:
         if self.klass == "bandit":
             return "B"
 
-    def randomPos(self):
-        return randint(1,7)
+    def randomPosX(self):
+        return randint(0, 48)
+
+    def randomPosY(self):
+        return randint(0, 9)
 

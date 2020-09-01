@@ -1,10 +1,11 @@
 
 class Tile:
-    def __init__(self, name, symbol, collide, interact=None):
+    def __init__(self, name, symbol, collide, interact=None, canAttack=False):
         self.name = name
         self.symbol = symbol
         self.collide = collide
         self.interact = interact
+        self.canAttack = canAttack
 
         self.standingOn = None
 
@@ -27,7 +28,13 @@ class Tile:
                 self.lockLevel = 10
 
     def __eq__(self, other):
-        return False
+        if other == None or self == None:
+            return False
+
+        if self.x == other.x and self.y == other.y:
+            return True
+        else:
+            return False
 
     def __repr__(self):
         return self.symbol
