@@ -15,7 +15,7 @@ def main(screen):
     while c != 27:
         screen.clear()
         full = level.refreshLayout()
-        if level.instructions or level.characterMenu:
+        if level.instructions or level.characterMenu or level.search:
             for x,i in enumerate(full):
                 screen.addstr(x+5, 25, i)
         else:
