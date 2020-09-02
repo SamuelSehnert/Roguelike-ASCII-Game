@@ -42,13 +42,21 @@ class Armor:
         return string
 
 class General:
-    def __init__(self, name, klass):
+    def __init__(self, name, klass, weight, value):
         self.name = name
         self.klass = klass
+        self.weight = weight
+        self.value = value
 
         if self.klass == "HEAL":
             self.healAmount = 1
             self.turnDuration = 3
+    def __repr__(self):
+        if self.klass == "HEAL":
+            string = (self.name + " | " + " | Healing: " + str(self.healAmount) + 
+                    " | Turn Duration: " + str(self.turnDuration) +" | Weight: " + str(self.weight) + 
+                    " | Value: " + str(self.value))
+            return string
 
 
 
@@ -72,7 +80,7 @@ level_1_armor = {"underwear": Armor(name="Underwear", klass = "LIGHT", raw_defen
 
 all_armor = {**level_1_armor}
 
-all_general = {"bandage": General(name="Bandage", klass="HEAL"),
+all_general = {"bandage": General(name="Bandage", klass="HEAL", weight=0.5, value=1),
                 }
 
 all_items = {**all_weapons, **all_armor, **all_general}
