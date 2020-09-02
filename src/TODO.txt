@@ -17,4 +17,4 @@
 [X] Make so that the camera follows the player while the level moves... if possible...
 [ ] Enemy turns and sort-of AI
 [ ] Range for attacking
-[ ] Inventories for containers
+[X] Inventories for containers
