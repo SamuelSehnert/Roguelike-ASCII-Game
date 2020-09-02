@@ -20,6 +20,7 @@ class Level:
         self.player = self.entities["player"]
 
         self.textBox = ["","","",""]
+        self.alterTextBox("You enter " + self.levelName)
 
         self.initEntities(self.entities)
 
@@ -27,6 +28,7 @@ class Level:
         self.selectedItem = 0
 
         self.search = False
+        self.searchContainer = None
 
         self.visualActive = False
         self.visual = None
@@ -171,6 +173,9 @@ class Level:
 
         elif self.characterMenu:
             return self.player.characterMenu(self.selectedItem)
+
+        elif self.search:
+            return self.searchContainer.searchMenu(self.selectedItem, self.player)
         
         else:
 
@@ -186,12 +191,14 @@ class Level:
                 total = len(self.layout[len(self.layout) - 1])
 
             lis.append("-"*total)
-            lis.append("\n" * 2)
+            lis.append("\n")
 
+            """
             lis.append("-" * (len(self.levelName) + 2))
             lis.append("|" + self.levelName + "|")
             lis.append("-" * (len(self.levelName) + 2))
             lis.append("\n")
+            """
 
             """
             for layer in self.layout:
@@ -229,7 +236,7 @@ class Level:
                     counter += 1
               
 
-            for i in range(counter):
+            for i in range(counter - 2):
                 lis.append("\n")
 
             for line in self.infoBar:
@@ -256,6 +263,12 @@ class Level:
             self.instructions = True
             return
 
+        if key == 101 and self.search: #q
+            self.fullDeactivation()
+            self.search = False
+            self.selectedItem = 0
+            return
+
         if key == 101 and not self.characterMenu: # e
             self.characterMenu = True
             return
@@ -264,6 +277,7 @@ class Level:
             self.characterMenu = False
             return
 
+        
         # go into this if the character menu is currently open
         if self.characterMenu:
             if key == 119:
@@ -276,6 +290,19 @@ class Level:
                     return
             elif key == 32:
                 self.player.useItem(self.selectedItem)
+            return
+
+        if self.search:
+            if key == 119:
+                if self.selectedItem - 1 >=0:
+                    self.selectedItem -= 1
+                    return
+            elif key == 115:
+                if self.selectedItem + 1 <= (len(self.player.inventory)) + (len(self.searchContainer.inventory) - 1) + 2:
+                    self.selectedItem += 1
+                    return
+            elif key == 32:
+                self.player.loot(self.searchContainer, self.selectedItem)
             return
 
             
@@ -317,14 +344,20 @@ class Level:
         if key == 32 and self.interactiveActive:
             if self.interact.standingOn.interact:
                 tile = self.interact.standingOn
+
                 if tile.interact == "CONTAINER":
                     if tile.status == "LOCKED":
                         self.player.stats["AP"][0] -= 1
                         tile.status = "UNLOCKED"
                         self.alterTextBox("You manage to unlock the container")
                     else:
-                        search = True
                         self.alterTextBox("You search the container")
+                        if not tile.searched:
+                            tile.inventory = tile.initContainer()
+                            tile.searched = True
+                        self.searchContainer = tile
+                        self.search = True
+
                 elif tile.interact == "DOOR":
                     if tile.status == "LOCKED":
                         self.player.stats["AP"][0] -= 1
@@ -608,11 +641,9 @@ class Level:
             for item in i:
                 item.visited = False
                 item.previous = None
-                item.visible = False
                 if item.standingOn != None:
                     item.standingOn.visited = False
                     item.standingOn.previous = None
-                    item.standingOn.visible = False
 
 
     def alterTextBox(self, text):
