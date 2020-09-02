@@ -58,6 +58,45 @@ class Player:
     def calculateWeaponAPCost(self):
         return self.weapon.APCost
 
+
+    def loot(self, container, selected):
+        if selected <= (len(self.inventory) - 1) + 2:
+            container.cap += 1
+            for x, item in enumerate(self.inventory, 2):
+                if x == selected:
+                    if item in container.inventory:
+                        container.inventory[item][1] += 1
+                        self.inventory[item][1] -= 1
+                        if self.inventory[item][1] <= 0:
+                            del self.inventory[item]
+                        return
+                    else:
+                        container.inventory[item] = [self.inventory[item][0], 1]
+                        self.inventory[item][1] -= 1
+                        if self.inventory[item][1] <= 0:
+                            del self.inventory[item]
+                        return
+
+
+
+        elif selected > (len(self.inventory) - 1) + 2:
+            container.cap -= 1
+            for x, item in enumerate(container.inventory, (len(self.inventory) - 1) + 3):
+                if x == selected:
+                    if item in self.inventory:
+                        self.inventory[item][1] += 1
+                        container.inventory[item][1] -= 1
+                        if container.inventory[item][1] <= 0:
+                            del container.inventory[item]
+                        return
+                    else:
+                        self.inventory[item] = [container.inventory[item][0], 1]
+                        container.inventory[item][1] -= 1
+                        if container.inventory[item][1] <= 0:
+                            del container.inventory[item]
+                        return
+
+
     def useItem(self, selected):
         # if player selecting current weapon to unequip
         if selected == 0:
@@ -155,6 +194,9 @@ class Player:
                         total.append("-->  | " + str(inventory[item][0].name) + " x " + str(inventory[item][1]) + "|  " + str(ITEMS.all_weapons[item]))
                     if isinstance(self.inventory[item][0], ITEMS.Armor):
                         total.append("-->  | " + str(inventory[item][0].name) + " x " + str(inventory[item][1]) + "|  " + str(ITEMS.all_armor[item]))
+                    if isinstance(self.inventory[item][0], ITEMS.General):
+                        total.append("-->  | " + str(self.inventory[item][0].name) + " x " + str(self.inventory[item][1]) + "|  " + str(ITEMS.all_general[item]))
+
                 else:
                     total.append("| " + str(inventory[item][0].name) + " x " + str(inventory[item][1]) + "|")
             total.append("-"*20)
@@ -175,12 +217,6 @@ class NPC:
 
         self.x = 0
         self.y = 0
-
- #       self.x = self.randomPos()
- #       self.y = self.randomPos()
-
-#        self.x = 4
-#        self.y = 1
 
         self.standingOn = None
         self.collide = collide
