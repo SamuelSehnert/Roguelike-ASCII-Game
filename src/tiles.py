@@ -56,12 +56,16 @@ class Tile:
 
     def initContainer(self):
         contains = {}
-        for i in range(self.cap):
+        i = 0
+        while i < self.cap:
             addition = choice(list(ITEMS.all_items))
+            if addition == "underwear" or addition == "fists":
+                continue
             if addition in contains:
                 contains[addition][1] += 1
             else:
                 contains[addition] = [ITEMS.all_items[addition], 1]
+            i += 1
         return contains
 
     def searchMenu(self, selected, player):

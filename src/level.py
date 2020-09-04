@@ -290,6 +290,7 @@ class Level:
                     return
             elif key == 32:
                 self.player.useItem(self.selectedItem)
+                self.alterInfoBar(self.player)
             return
 
         if self.search:

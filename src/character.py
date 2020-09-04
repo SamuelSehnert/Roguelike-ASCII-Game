@@ -31,6 +31,10 @@ class Player:
                           "common clothes": [ITEMS.all_items["common clothes"], 1],
                           } 
 
+        # 2D list of ["type", amount, turnDuration]
+        # used for healing, poision, etc
+        self.turnChanges = []
+
     def __repr__(self):
         return "@"
 
@@ -76,9 +80,6 @@ class Player:
                         if self.inventory[item][1] <= 0:
                             del self.inventory[item]
                         return
-
-
-
         elif selected > (len(self.inventory) - 1) + 2:
             container.cap -= 1
             for x, item in enumerate(container.inventory, (len(self.inventory) - 1) + 3):
@@ -117,13 +118,18 @@ class Player:
         else:
             for x, item in enumerate(self.inventory, 2):
                 if x == selected:
-                    if item in ITEMS.all_weapons:
+                    #if item in ITEMS.all_weapons:
+                    if isinstance(self.inventory[item][0], ITEMS.Weapon):
                         self.equipWeapon(item)
                         self.stats["DMG"] = self.calculateDMG()
 
-                    elif item in ITEMS.all_armor:
+                    elif isinstance(self.inventory[item][0], ITEMS.Armor):
                         self.equipArmor(item)
                         self.stats["DF"] = self.calculateDF()
+
+                    elif isinstance(self.inventory[item][0], ITEMS.General):
+                        self.useConsumable(item)
+
                     self.stats["AP"][0] -= 1
                     return
 
@@ -157,6 +163,25 @@ class Player:
             self.inventory[item][1] -= 1
             if self.inventory[item][1] == 0:
                 del self.inventory[item]
+
+    def useConsumable(self, item):
+        if self.inventory[item][0].klass == "HEAL":
+            self.stats["HP"][0] += self.inventory[item][0].healAmount
+            self.inventory[item][1] -= 1
+            self.turnChanges.append(["HEAL", self.inventory[item][0].healAmount, self.inventory[item][0].turnDuration])
+            if self.inventory[item][1] == 0:
+                del self.inventory[item]
+
+        return
+
+    def durationChange(self, changes):
+        for x, change in enumerate(changes):
+            if change[0] == "HEAL":
+                self.stats["HP"][0] += change[1]
+                change[2] -= 1
+                if change[2] < 0:
+                    self.turnChanges.pop(x)
+        return
 
 
     def characterMenu(self, selected):

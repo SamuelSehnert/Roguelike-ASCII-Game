@@ -1,5 +1,6 @@
 [X] when equip or use item, -1 from inventory
 [ ] Implement non-weapon non-armor items; bandaid. money, etc
+[ ] Implement Weight and weight limit
 [X] attaking + A* max pathfinding to determine collisions
 [X] interact with spacebar to do things
 [X] inventory cleanup
@@ -18,3 +19,4 @@
 [ ] Enemy turns and sort-of AI
 [ ] Range for attacking
 [X] Inventories for containers
+[ ] Not subtract AP for equiping and already equip item

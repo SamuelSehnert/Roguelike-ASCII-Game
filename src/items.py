@@ -65,7 +65,7 @@ level_1_weapons = {"fists": Weapon(name="Fists", klass="MELEE", raw_damage=1, ra
                    "small knife": Weapon(name="Small Knife", klass="MELEE", raw_damage=2, raw_range=1, ammoCap=None, APCost=1, weight=2, value=2),
                   }
 
-level_2_weapons = {"brass knuckes": Weapon(name="Brass Knuckles", klass="MELEE", raw_damage=3, raw_range=1, ammoCap=None, APCost=2, weight=4, value=5),
+level_2_weapons = {"brass knuckles": Weapon(name="Brass Knuckles", klass="MELEE", raw_damage=3, raw_range=1, ammoCap=None, APCost=2, weight=4, value=5),
 
                   }
 
