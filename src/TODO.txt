@@ -8,7 +8,7 @@
 [X] actions take action points to preform
 [X] make so you can't see other rooms before entering them
 [ ] overall optimization and refractor
-[ ] Better entity spawning
+[X] Better entity spawning
     - generate random number within bounds of map
     - check to see if it lands on a collision
 [ ] Character creation and attribute allocation
@@ -17,6 +17,7 @@
 [ ] Dialogue in general...
 [X] Make so that the camera follows the player while the level moves... if possible...
 [ ] Enemy turns and sort-of AI
-[ ] Range for attacking
+[X] Range for attacking
 [X] Inventories for containers
 [ ] Not subtract AP for equiping and already equip item
+[ ] Add hit chance next to clear shot
