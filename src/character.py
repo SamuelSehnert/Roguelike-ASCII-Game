@@ -1,43 +1,67 @@
-from random import randint
+from random import randint, choice
 import items as ITEMS
+from copy import copy
 
-import level as LEVEL
+def generateName():
+    nameFile = open("../art/names.txt", "r")
+    nameList = []
+    temp = []
+    for name in nameFile.readlines():
+        name = name.strip()
+        if name == "--":
+            nameList.append(temp)
+            temp = []
+        else:
+            temp.append(name)
+    nameList.append(temp)
+    nameFile.close()
+    return nameList
 
 
-class Player:
-    def __init__(self, name, health, AP,  collide=True):
+nameList = generateName()
+
+class NPC:
+    def __init__(self, name, klass, symbol, health, AP, Lv, isHostile, isRandom=False, collide=True):
         self.name = name
+        self.isRandom = isRandom
+        self.LV = Lv
 
-        self.weapon = ITEMS.all_weapons["fists"]
-        self.armor = ITEMS.all_armor["underwear"]
+        #EXAMPLE:
+        #self.weapon = ITEMS.all_weapons["fists"]
+        #Takes an object
+        self.weapon = choice(list(ITEMS.all_weapons.values()))
+        self.armor = choice(list(ITEMS.all_armor.values()))
 
         self.stats = {"HP":[health, health], "AP":[AP,AP], "DF":self.calculateDF(),"DMG":self.calculateDMG()}
 
         self.visRangeY = 3
         self.visRangeX = self.visRangeY * 2
 
-        self.x = 5
-        self.y = 7
+        self.isHostile = isHostile
+        self.canAttack = True
+
+        self.klass = klass
+        self.symbol = symbol
+
+        self.x = 0
+        self.y = 0
 
         self.standingOn = None
         self.collide = collide
 
-        self.canAttack = True
+        self.visited = False
 
-        self.interact = False
+        self.interact = True
 
         #{common name:[object pointer, quantity]}
-        self.inventory = {"rusty pistol": [ITEMS.all_items["rusty pistol"], 1],
-                          "common clothes": [ITEMS.all_items["common clothes"], 1],
-                          } 
+        self.inventory = {}
 
         # 2D list of ["type", amount, turnDuration]
         # used for healing, poision, etc
         self.turnChanges = []
 
     def __repr__(self):
-        return "@"
-
+        return self.symbol
 
     def move(self, moveDirection):
         if moveDirection == "w":
@@ -61,6 +85,78 @@ class Player:
 
     def calculateWeaponAPCost(self):
         return self.weapon.APCost
+
+    def calculateDistance(self, other):
+        differenceX = abs(self.x - other.x)
+        differenceY = abs(self.y - other.y)
+        #return round(((differenceX**2) + (differenceY)**2)**(1/2), 2)
+        return int(((differenceX**2) + (differenceY)**2)**(1/2))
+
+    def calculateRange(self):
+        return self.weapon.raw_range
+
+    def caluculateHit(self, other):
+        distance = self.calculateDistance(other)
+        if distance <= self.calculateRange():
+            return True
+        else:
+            return False
+
+    def equipWeapon(self, item):
+        # if the current weapon is in the inventory, will then add one to item quantity
+        if self.weapon.name.lower() in self.inventory:
+            self.inventory[self.weapon.name.lower()][1] += 1
+        # if the current weapon is NOT in the inventory
+        else:
+            if self.weapon.name.lower() != "fists":
+                self.inventory[self.weapon.name.lower()] = [ITEMS.all_weapons[self.weapon.name.lower()], 1]
+        
+        if item != "fists":
+            self.weapon = self.inventory[item][0]
+            self.inventory[item][1] -= 1
+            if self.inventory[item][1] == 0:
+                del self.inventory[item]
+
+
+    def equipArmor(self, item):
+        # if the current armor is in the inventory, will then add one to item quantity
+        if self.armor.name.lower() in self.inventory:
+            self.inventory[self.armor.name.lower()][1] += 1
+        # if the current armor is NOT in the inventory
+        else:
+            if self.armor.name.lower() != "underwear":
+                self.inventory[self.armor.name.lower()] = [ITEMS.all_armor[self.armor.name.lower()], 1]
+        
+        if item != "underwear":
+            self.armor = self.inventory[item][0]
+            self.inventory[item][1] -= 1
+            if self.inventory[item][1] == 0:
+                del self.inventory[item]
+
+    def useConsumable(self, item):
+        if self.inventory[item][0].klass == "HEAL":
+            self.stats["HP"][0] += self.inventory[item][0].healAmount
+            self.inventory[item][1] -= 1
+            self.turnChanges.append(["HEAL", self.inventory[item][0].healAmount, self.inventory[item][0].turnDuration])
+            if self.inventory[item][1] == 0:
+                del self.inventory[item]
+        return
+
+    def durationChange(self, changes):
+        for x, change in enumerate(changes):
+            if change[0] == "HEAL":
+                self.stats["HP"][0] += change[1]
+                change[2] -= 1
+                if change[2] < 0:
+                    self.turnChanges.pop(x)
+        return
+
+
+class Player(NPC):
+    def __init__(self, name, klass, symbol, health, AP, Lv, isHostile, collide=True):
+        NPC.__init__(self, name, klass, symbol, health, AP, Lv, isHostile, collide=True)
+        self.x = 1
+        self.y = 1
 
 
     def loot(self, container, selected):
@@ -133,57 +229,6 @@ class Player:
                     self.stats["AP"][0] -= 1
                     return
 
-    def equipWeapon(self, item):
-        # if the current weapon is in the inventory, will then add one to item quantity
-        if self.weapon.name.lower() in self.inventory:
-            self.inventory[self.weapon.name.lower()][1] += 1
-        # if the current weapon is NOT in the inventory
-        else:
-            if self.weapon.name.lower() != "fists":
-                self.inventory[self.weapon.name.lower()] = [ITEMS.all_weapons[self.weapon.name.lower()], 1]
-        
-        if item != "fists":
-            self.weapon = self.inventory[item][0]
-            self.inventory[item][1] -= 1
-            if self.inventory[item][1] == 0:
-                del self.inventory[item]
-
-
-    def equipArmor(self, item):
-        # if the current armor is in the inventory, will then add one to item quantity
-        if self.armor.name.lower() in self.inventory:
-            self.inventory[self.armor.name.lower()][1] += 1
-        # if the current armor is NOT in the inventory
-        else:
-            if self.armor.name.lower() != "underwear":
-                self.inventory[self.armor.name.lower()] = [ITEMS.all_armor[self.armor.name.lower()], 1]
-        
-        if item != "underwear":
-            self.armor = self.inventory[item][0]
-            self.inventory[item][1] -= 1
-            if self.inventory[item][1] == 0:
-                del self.inventory[item]
-
-    def useConsumable(self, item):
-        if self.inventory[item][0].klass == "HEAL":
-            self.stats["HP"][0] += self.inventory[item][0].healAmount
-            self.inventory[item][1] -= 1
-            self.turnChanges.append(["HEAL", self.inventory[item][0].healAmount, self.inventory[item][0].turnDuration])
-            if self.inventory[item][1] == 0:
-                del self.inventory[item]
-
-        return
-
-    def durationChange(self, changes):
-        for x, change in enumerate(changes):
-            if change[0] == "HEAL":
-                self.stats["HP"][0] += change[1]
-                change[2] -= 1
-                if change[2] < 0:
-                    self.turnChanges.pop(x)
-        return
-
-
     def characterMenu(self, selected):
         def display(health, ap, df, dmg, inventory, selected):
             total = []
@@ -229,40 +274,27 @@ class Player:
             return total
         return display(self.stats["HP"], self.stats["AP"], self.stats["DF"], self.stats["DMG"], self.inventory, selected)
 
+class Bandit(NPC):
+    def __init__(self, name, klass, symbol, HP, AP, Lv, isHostile):
+        NPC.__init__(self, name, klass, symbol, HP, AP, Lv, isHostile)
+        self.isRandom = True
+        self.name = ""#choice(nameList[0]) + " " + choice(nameList[1])
+        self.num = randint(0,10)
 
-class NPC:
-    def __init__(self, name, klass, health, AP, isHostile, collide=True):
-        self.name = name
-        self.stats = {"HP":[health, health], "AP":[AP,AP]}
+    def randomName(self):
+        return choice(nameList[0]) + " " + choice(nameList[1])
 
-        self.isHostile = isHostile
-        self.canAttack = True
+    def randomGear(self):
+        return 
 
-        self.klass = klass
+    def randomPosY(self, boundY):
+        return randint(0,boundY)
 
-        self.x = 0
-        self.y = 0
+    def randomPosX(self, boundX):
+        return randint(0,boundX)
 
-        self.standingOn = None
-        self.collide = collide
 
-        self.visited = False
 
-        self.interact = True
 
-        #{common name:[object pointer, quantity]}
-        self.inventory = {}
-
-        self.weapon = ITEMS.all_weapons["fists"]
-        self.armor = ITEMS.all_armor["underwear"]
-
-    def __repr__(self):
-        if self.klass == "bandit":
-            return "B"
-
-    def randomPosX(self):
-        return randint(0, 45)
-
-    def randomPosY(self):
-        return randint(0, 7)
-
+all_NPCs = {"bandit": Bandit("name", "bandit", "B", 5,5,1, True),
+           }
