@@ -3,13 +3,13 @@ import level as lv
 import character as CHARACTER
 
 def main(screen):
-    player = CHARACTER.Player("Sam", 10, 100, False)
-    enemy = CHARACTER.NPC("Jose", "bandit", 5, 5, True)
-    npc = CHARACTER.NPC("Bobbu", "bandit", 3, 3, True)
+    player = CHARACTER.Player("Sam", "player", "@", 10, 100, 1, False)
 
-    level = lv.Level("level_1.txt", {"player":player, 
-                                     "bandit":enemy,
-                                     "bandit2":npc})
+    level = lv.all_levels["level_1"]
+    level.entities["player"] = player
+    level.player = player
+    level.initEntities(level.entities)
+
 
     c = ""
     while c != 27:
@@ -25,6 +25,5 @@ def main(screen):
         screen.refresh()
         c = screen.getch()
         level.distributeInput(level.entities["player"], c)
-        
 
 curses.wrapper(main)
