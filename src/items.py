@@ -75,7 +75,10 @@ all_weapons = {**level_1_weapons, **level_2_weapons}
 
 
 level_1_armor = {"underwear": Armor(name="Underwear", klass = "LIGHT", raw_defence=0, weight=0, value=0),
-                 "common clothes": Armor(name="Common Clothes", klass="LIGHT", raw_defence=2, weight=1, value=2),
+                 "common clothes": Armor(name="Common Clothes", klass="LIGHT", raw_defence=1, weight=1, value=2),
+                }
+
+level_2_armor = {"leather armor": Armor(name="Leather Armor", klass = "LIGHT", raw_defence=3, weight=4,value=5),
                 }
 
 all_armor = {**level_1_armor}
