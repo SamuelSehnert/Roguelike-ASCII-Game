@@ -2,11 +2,10 @@ import items as ITEMS
 from random import choice, randint
 
 class Tile:
-    def __init__(self, name, symbol, collide, interact=None, canAttack=False):
+    def __init__(self, name, symbol, collide, canAttack=False):
         self.name = name
         self.symbol = symbol
         self.collide = collide
-        self.interact = interact
 
         self.canAttack = canAttack
 
@@ -16,22 +15,6 @@ class Tile:
         self.visited = False
         self.x = 0
         self.y = 0
-
-        if interact == "CONTAINER": #container
-            self.cap = 4
-            self.open = False
-            self.searched = False
-            self.status = "LOCKED"
-            if self.status == "LOCKED":
-                self.lockLevel = 10
-                self.level = self.lockLevel // 10
-            self.inventory = {}
-
-        elif interact == "DOOR": #door
-            self.open = False
-            self.status = "LOCKED"
-            if self.status == "LOCKED":
-                self.lockLevel = 10
 
     def __eq__(self, other):
         if other == None or self == None:
@@ -45,14 +28,19 @@ class Tile:
     def __repr__(self):
         return self.symbol
 
-    def openDoor(self):
-        self.open = not self.open
-        if self.open:
-            self.symbol = "/"
-            self.collide = False
-        elif not self.open:
-            self.symbol = "|"
-            self.collide = True
+    
+    
+class Container(Tile):
+    def __init__(self, name, symbol, collide):
+        Tile.__init__(self, name, symbol, collide)
+        self.cap = 4
+        self.open = False
+        self.searched = False
+        self.status = "LOCKED"
+        if self.status == "LOCKED":
+            self.lockLevel = 10
+            self.level = self.lockLevel // 10
+        self.inventory = {}
 
     def initContainer(self):
         contains = {}
@@ -92,10 +80,29 @@ class Tile:
         display.append("-"*20)
 
         return display
+
+
+class Door(Tile):
+    def __init__(self, name, symbol, collide):
+        Tile.__init__(self, name, symbol, collide)
+        self.open = False
+        self.status = "LOCKED"
+        if self.status == "LOCKED":
+            self.lockLevel = 10
+
+    def openDoor(self):
+        self.open = not self.open
+        if self.open:
+            self.symbol = "/"
+            self.collide = False
+        elif not self.open:
+            self.symbol = "|"
+            self.collide = True
+
             
 all_tiles = {" ": Tile("Air", " ", True),
              ".": Tile("Floor", ".", False),
              "#": Tile("Wall", "#", True),
-             "|": Tile("Door", "|", True, interact="DOOR"),
-             "C": Tile("Chest", "C", True, interact="CONTAINER"),
+             "|": Door("Door", "|", True),
+             "C": Container("Chest", "C", True),
              }
