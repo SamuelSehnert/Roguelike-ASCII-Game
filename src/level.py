@@ -12,17 +12,18 @@ class Level:
             self.levelName = self.randomName()
         else:
             self.levelName = levelName
+            
+        self.boundY = 0
+        self.boundX = 0
         self.layout = self.loadLevel(fileName)
-
+        
         self.instructions = True
 
         self.entities = entities
-        self.player = self.entities["player"]
+        self.player = None
 
         self.textBox = ["","","",""]
         self.alterTextBox("You enter " + self.levelName)
-
-        self.initEntities(self.entities)
 
         self.characterMenu = False
         self.selectedItem = 0
@@ -59,8 +60,20 @@ class Level:
         levelFile = open("../art/" + fileName, "r")
         levelList = []
 
+        boundary = False
+        go = False
         for levelY, row in enumerate(levelFile.readlines()):
             line = []
+            if boundary and not go:
+                self.boundY = int(row.strip())
+                go = True
+                continue
+            elif boundary and go:
+                self.boundX = int(row.strip())
+                break
+            if row == "\n":
+                boundary = True
+                continue
             for levelX, item in enumerate(row.strip()):
                 tile = copy(TILES.all_tiles[item])
                 tile.x = levelX
@@ -81,10 +94,13 @@ class Level:
             coordinates are on a valid tile
         """
         for single in entities.values():
-            if isinstance(single, CHARACTER.NPC):
+            #if not isinstance(single, CHARACTER.Player):
+            if single.isRandom:
+                single = copy(single)
+                single.name = single.randomName()
                 while True:
-                    single.y = single.randomPosY()
-                    single.x = single.randomPosX()
+                    single.y = single.randomPosY(self.boundY)
+                    single.x = single.randomPosX(self.boundX)
                     if not self.layout[single.y][single.x].collide:
                         single.standingOn = self.layout[single.y][single.x]
                         self.layout[single.y][single.x] = single
@@ -113,15 +129,16 @@ class Level:
             
             total1 = total - (len(entity.name) + len(entity.klass))
             string_list.append(entity.name.title() + " " * total1 + entity.klass.title())
-
+            """
             total2 = total - (len("Health: " + str(entity.stats["HP"])) + len("Action Points: " + str(entity.stats["AP"])))
             string_list.append("Health: " + str(entity.stats["HP"]) + " " * total2 + "Action Points: " + str(entity.stats["AP"]))
+            """
 
         elif isinstance(entity, TILES.Tile):
             total3 = total - (len("Health: " + str(self.player.stats["HP"])) + len("Action Points: " + str(self.player.stats["AP"])))
             string_list.append("Health: " + str(self.player.stats["HP"]) + " " * total3 + "Action Points: " + str(self.player.stats["AP"]))
             string_list.append("-" * total)
-            if entity.interact == "CONTAINER" or entity.interact == "DOOR":
+            if isinstance(entity, TILES.Container) or isinstance(entity, TILES.Door):
                 if entity.status == "LOCKED":
                     total = total - (len("Status: ") + len(entity.status) + len("Lock Level: ") + len(str(entity.lockLevel)))
                     string_list.append(str(entity.name))
@@ -138,14 +155,14 @@ class Level:
 
             else:
                 string_list.append(str(entity.name))
-        
+
+        string_list.append("-" * total)
         if self.valid and self.attackActive:
             string_list.append("Clear Shot")
         elif not self.valid and self.attackActive:
             string_list.append("Shot Blocked")
 
         self.infoBar = string_list
-        #self.infoBar = []
 
 
     def refreshLayout(self):
@@ -193,20 +210,6 @@ class Level:
             lis.append("-"*total)
             lis.append("\n")
 
-            """
-            lis.append("-" * (len(self.levelName) + 2))
-            lis.append("|" + self.levelName + "|")
-            lis.append("-" * (len(self.levelName) + 2))
-            lis.append("\n")
-            """
-
-            """
-            for layer in self.layout:
-                raw = ""
-                for item in layer:
-                    raw += str(item)
-                lis.append(raw)
-            """
             counter = 0
             for layer in range(len(self.layout)):
                 raw = spacer
@@ -316,16 +319,29 @@ class Level:
             entity = self.attack
             if key == 32:
                 if self.valid and entity.standingOn.canAttack:
-                    self.player.stats["AP"][0] -= self.player.calculateWeaponAPCost()
-                    self.player.attack(self.attack.standingOn)
-                    self.alterInfoBar(self.attack.standingOn)
-                    self.alterTextBox("You hit " + str(self.attack.standingOn.name) + " with " + str(self.player.calculateDMG()) + " damage")
+                    if self.player.caluculateHit(entity.standingOn):
+                        self.player.stats["AP"][0] -= self.player.calculateWeaponAPCost()
+                        self.player.attack(self.attack.standingOn)
+                        self.alterInfoBar(self.attack.standingOn)
+                        self.alterTextBox("You hit " + str(self.attack.standingOn.name) + " with " + str(self.player.calculateDMG()) + " damage")
+                    else:
+                        self.player.stats["AP"][0] -= self.player.calculateWeaponAPCost()
+                        self.alterInfoBar(self.attack.standingOn)
+                        self.alterTextBox("You attacked " + str(self.attack.standingOn.name) + ", but missed!")
+
 
                 elif self.valid and not entity.standingOn.canAttack:
-                    self.player.stats["AP"][0] -= self.player.calculateWeaponAPCost()
-                    self.alterInfoBar(self.attack.standingOn)
-                    self.alterTextBox("You hit the " + str(entity.standingOn.name) + "... It did nothing...")
+                    if self.player.caluculateHit(entity.standingOn):
+                        self.player.stats["AP"][0] -= self.player.calculateWeaponAPCost()
+                        self.alterInfoBar(self.attack.standingOn)
+                        self.alterTextBox("You hit the " + str(entity.standingOn.name) + "... It did nothing...")
+                    else:
+                        self.player.stats["AP"][0] -= self.player.calculateWeaponAPCost()
+                        self.alterInfoBar(self.attack.standingOn)
+                        self.alterTextBox("You attacked " + str(entity.standingOn.name) + ", but missed!")
                 return
+        else:
+            entity = self.player
 
    
         #default movement for any entity
@@ -343,40 +359,39 @@ class Level:
 
         #interact with tile/NPC that "i" is currently on
         if key == 32 and self.interactiveActive:
-            if self.interact.standingOn.interact:
-                tile = self.interact.standingOn
+            tile = self.interact.standingOn
 
-                if tile.interact == "CONTAINER":
-                    if tile.status == "LOCKED":
-                        self.player.stats["AP"][0] -= 1
-                        tile.status = "UNLOCKED"
-                        self.alterTextBox("You manage to unlock the container")
-                    else:
-                        self.alterTextBox("You search the container")
-                        if not tile.searched:
-                            tile.inventory = tile.initContainer()
-                            tile.searched = True
-                        self.searchContainer = tile
-                        self.search = True
+            if isinstance(tile, TILES.Container):
+                if tile.status == "LOCKED":
+                    self.player.stats["AP"][0] -= 1
+                    tile.status = "UNLOCKED"
+                    self.alterTextBox("You manage to unlock the container")
+                else:
+                    self.alterTextBox("You search the container")
+                    if not tile.searched:
+                        tile.inventory = tile.initContainer()
+                        tile.searched = True
+                    self.searchContainer = tile
+                    self.search = True
 
-                elif tile.interact == "DOOR":
-                    if tile.status == "LOCKED":
+            elif isinstance(tile, TILES.Door):
+                if tile.status == "LOCKED":
+                    self.player.stats["AP"][0] -= 1
+                    tile.status = "UNLOCKED"
+                    self.alterTextBox("You manage to unlock the door")
+                elif tile.status == "UNLOCKED":
+                    tile.open = not tile.open
+                    if tile.open:
                         self.player.stats["AP"][0] -= 1
-                        tile.status = "UNLOCKED"
-                        self.alterTextBox("You manage to unlock the door")
-                    elif tile.status == "UNLOCKED":
-                        tile.open = not tile.open
-                        if tile.open:
-                            self.player.stats["AP"][0] -= 1
-                            tile.symbol = "/"
-                            tile.collide = False
-                            self.alterTextBox("You open the door")
-                        elif not tile.open:
-                            self.player.stats["AP"][0] -= 1
-                            tile.symbol = "|"
-                            tile.collide = True
-                            self.alterTextBox("You close the door")
-                self.alterInfoBar(self.interact.standingOn)
+                        tile.symbol = "/"
+                        tile.collide = False
+                        self.alterTextBox("You open the door")
+                    elif not tile.open:
+                        self.player.stats["AP"][0] -= 1
+                        tile.symbol = "|"
+                        tile.collide = True
+                        self.alterTextBox("You close the door")
+            self.alterInfoBar(self.interact.standingOn)
 
 
 
@@ -469,10 +484,10 @@ class Level:
                 entity.standingOn = self.layout[entity.y][entity.x]
                 self.layout[entity.y][entity.x] = entity
 
-            self.valid = pathfinding.validPath(self.layout, self.player.standingOn, self.attack.standingOn, self.player.x, self.player.y)
-            self.resetAttackLayout()
+                self.valid = pathfinding.validPath(self.layout, self.player.standingOn, self.attack.standingOn, self.player.x, self.player.y)
+                self.resetAttackLayout()
 
-            self.alterInfoBar(self.attack.standingOn)
+                self.alterInfoBar(self.attack.standingOn)
 
         elif isinstance(entity, VISUAL.Interact) and self.interact.y + 1 <= self.player.y + 1:
             self.layout[entity.y][entity.x] = entity.standingOn
@@ -658,4 +673,7 @@ class Level:
 
 
 
+all_levels = {"level_1":Level("level_1.txt", {1:CHARACTER.all_NPCs["bandit"], 
+                                              2:CHARACTER.all_NPCs["bandit"]})
+             }
 
