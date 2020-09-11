@@ -127,3 +127,116 @@ def validPath(layout, startingTile, target, x, y): #player.x = x, player.y = y
 
     return True
 
+
+def movementPath(layout, startingTile, target, x, y): #entity.x = x, entity.y = y
+    #if isinstance(target, Player):
+        #return True
+    
+    Q = queue.Queue()
+
+    startingTile.previous = None
+
+    Q.put(layout[y][x])
+
+    while Q.qsize() > 0:
+
+        current = Q.get()
+        current.visited = True
+        y = current.y
+        x = current.x
+
+        if y + 1 < len(layout):
+            if layout[y + 1][x].standingOn == target:
+                layout[y + 1][x].previous = current
+                current = layout[y + 1][x]
+                break
+            elif not layout[y + 1][x].visited and not layout[y + 1][x].collide:
+                Q.put(layout[y + 1][x])
+                layout[y + 1][x].previous = current
+                layout[y + 1][x].visited = True
+
+        if y - 1 >= 0:
+            if layout[y - 1][x].standingOn == target:
+                layout[y - 1][x].previous = current
+                current = layout[y - 1][x]
+                break
+            elif not layout[y - 1][x].visited and not layout[y - 1][x].collide:
+                Q.put(layout[y - 1][x])
+                layout[y - 1][x].previous = current
+                layout[y - 1][x].visited = True
+
+        if x + 1 < len(layout[y]):
+            if layout[y][x + 1].standingOn == target:
+                layout[y][x + 1].previous = current
+                current = layout[y][x + 1]
+                break
+
+            elif not layout[y][x + 1].visited and not layout[y][x + 1].collide:
+                Q.put(layout[y][x + 1])
+                layout[y][x + 1].previous = current
+                layout[y][x + 1].visited = True
+
+        if x - 1 >= 0:
+            if layout[y][x - 1].standingOn == target:
+                layout[y][x - 1].previous = current
+                current = layout[y][x - 1]
+                break
+
+            elif not layout[y][x - 1].visited and not layout[y][x - 1].collide:
+                Q.put(layout[y][x - 1])
+                layout[y][x - 1].previous = current
+                layout[y][x - 1].visited = True
+    """
+        if x - 1 >= 0 and y - 1 >= 0:
+            if layout[y - 1][x - 1].standingOn == target:
+                layout[y - 1][x - 1].previous = current
+                current = layout[y - 1][x - 1]
+                break
+
+            elif not layout[y - 1][x - 1].visited and not layout[y - 1][x - 1].collide:
+                Q.put(layout[y - 1][x - 1])
+                layout[y - 1][x - 1].previous = current
+                layout [y - 1][x - 1].visited = True
+
+        if x - 1 >= 0 and y + 1 < len(layout):
+            if layout[y + 1][x - 1].standingOn == target:
+                layout[y + 1][x - 1].previous = current
+                current = layout[y + 1][x - 1]
+                break
+
+            elif not layout[y + 1][x - 1].visited and not layout[y + 1][x - 1].collide:
+                Q.put(layout[y + 1][x - 1])
+                layout[y + 1][x - 1].previous = current
+                layout [y + 1][x - 1].visited = True
+
+        if x + 1 < len(layout[y]) and y - 1 >= 0:
+            if layout[y - 1][x + 1].standingOn == target:
+                layout[y - 1][x + 1].previous = current
+                current = layout[y - 1][x + 1]
+                break
+
+            elif not layout[y - 1][x + 1].visited and not layout[y - 1][x + 1].collide:
+                Q.put(layout[y - 1][x + 1])
+                layout[y - 1][x + 1].previous = current
+                layout [y - 1][x + 1].visited = True
+
+        if x + 1 < len(layout[y]) and y + 1 < len(layout):
+            if layout[y + 1][x + 1].standingOn == target:
+                layout[y + 1][x + 1].previous = current
+                current = layout[y + 1][x + 1]
+                break
+
+            elif not layout[y + 1][x + 1].visited and not layout[y + 1][x + 1].collide:
+                Q.put(layout[y + 1][x + 1])
+                layout[y + 1][x + 1].previous = current
+                layout [y + 1][x + 1].visited = True
+    """
+
+    path = []
+    while current.previous != startingTile:
+        path.insert(0, current)
+        current = current.previous
+    path.insert(0, current)
+    return path
+
+

@@ -5,6 +5,7 @@ import character as CHARACTER
 import pathfinding
 
 from copy import copy
+from time import time, sleep
 
 class Level:
     def __init__(self, fileName, entities, levelName=None):
@@ -12,6 +13,9 @@ class Level:
             self.levelName = self.randomName()
         else:
             self.levelName = levelName
+
+        self.turn = True
+        self.cont = False
             
         self.boundY = 0
         self.boundX = 0
@@ -93,11 +97,13 @@ class Level:
         [ ] while loop to see if generated
             coordinates are on a valid tile
         """
-        for single in entities.values():
+        #for single in entities.values():
+        for index, single in enumerate(entities.values(), 1):
             #if not isinstance(single, CHARACTER.Player):
             if single.isRandom:
                 single = copy(single)
                 single.name = single.randomName()
+                single.stats = single.randomStats()
                 while True:
                     single.y = single.randomPosY(self.boundY)
                     single.x = single.randomPosX(self.boundX)
@@ -105,6 +111,7 @@ class Level:
                         single.standingOn = self.layout[single.y][single.x]
                         self.layout[single.y][single.x] = single
                         break
+                entities[index] = single
             else:
                 single.standingOn = self.layout[single.y][single.x]
                 self.layout[single.y][single.x] = single
@@ -256,7 +263,10 @@ class Level:
         r: reload weapon if applicable
         e: bring up player inventory menu
         =: bring up the instructions and explanation of keybinding
-        """
+        """ 
+        if entity.stats["AP"][0] <= 0:
+            self.cont = False
+            return
 
         # opening and closing menues
         if self.instructions:
@@ -320,7 +330,6 @@ class Level:
             if key == 32:
                 if self.valid and entity.standingOn.canAttack:
                     if self.player.caluculateHit(entity.standingOn):
-                        self.player.stats["AP"][0] -= self.player.calculateWeaponAPCost()
                         self.player.attack(self.attack.standingOn)
                         self.alterInfoBar(self.attack.standingOn)
                         self.alterTextBox("You hit " + str(self.attack.standingOn.name) + " with " + str(self.player.calculateDMG()) + " damage")
@@ -329,10 +338,8 @@ class Level:
                         self.alterInfoBar(self.attack.standingOn)
                         self.alterTextBox("You attacked " + str(self.attack.standingOn.name) + ", but missed!")
 
-
                 elif self.valid and not entity.standingOn.canAttack:
                     if self.player.caluculateHit(entity.standingOn):
-                        self.player.stats["AP"][0] -= self.player.calculateWeaponAPCost()
                         self.alterInfoBar(self.attack.standingOn)
                         self.alterTextBox("You hit the " + str(entity.standingOn.name) + "... It did nothing...")
                     else:
@@ -340,9 +347,31 @@ class Level:
                         self.alterInfoBar(self.attack.standingOn)
                         self.alterTextBox("You attacked " + str(entity.standingOn.name) + ", but missed!")
                 return
-        else:
-            entity = self.player
 
+        elif entity != self.player:
+            sleep(0.15)
+            self.cont = True
+            if entity.stats["AP"][0] <= 0:
+                self.cont = False
+                return
+            if entity.isHostile:
+                if entity.caluculateHit(self.player):
+                    entity.attack(self.player)
+                    self.alterTextBox(str(entity.name) + " attacked " + str(self.player.name) + " with a " + str(entity.weapon.name))
+                else:
+                    path = pathfinding.movementPath(self.layout, entity, self.player, entity.x, entity.y) 
+                    x = entity.x
+                    y = entity.y
+                    if self.layout[y][x + 1] == path[0]:
+                        self.charRight(entity)
+                    elif self.layout[y][x - 1] == path[0]:
+                        self.charLeft(entity)
+                    elif self.layout[y + 1][x] == path[0]:
+                        self.charDown(entity)
+                    elif self.layout[y - 1][x] == path[0]:
+                        self.charUp(entity)
+            self.resetAttackLayout()
+            return
    
         #default movement for any entity
         if key == 119:

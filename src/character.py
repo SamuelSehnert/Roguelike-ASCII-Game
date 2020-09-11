@@ -34,7 +34,7 @@ class NPC:
 
         self.stats = {"HP":[health, health], "AP":[AP,AP], "DF":self.calculateDF(),"DMG":self.calculateDMG()}
 
-        self.visRangeY = 3
+        self.visRangeY = 100
         self.visRangeX = self.visRangeY * 2
 
         self.isHostile = isHostile
@@ -75,6 +75,7 @@ class NPC:
 
     def attack(self, other):
         damage = self.calculateDMG()
+        self.stats["AP"][0] -= self.calculateWeaponAPCost()
         other.stats["HP"][0] -= damage
 
     def calculateDF(self):
@@ -275,11 +276,18 @@ class Player(NPC):
         return display(self.stats["HP"], self.stats["AP"], self.stats["DF"], self.stats["DMG"], self.inventory, selected)
 
 class Bandit(NPC):
-    def __init__(self, name, klass, symbol, HP, AP, Lv, isHostile):
-        NPC.__init__(self, name, klass, symbol, HP, AP, Lv, isHostile)
+    def __init__(self, name, klass, symbol, health, AP, Lv, isHostile):
+        NPC.__init__(self, name, klass, symbol, health, AP, Lv, isHostile)
+        self.health = health
+        self.AP = AP
+        self.stats = {}
         self.isRandom = True
-        self.name = ""#choice(nameList[0]) + " " + choice(nameList[1])
+        self.name = ""
         self.num = randint(0,10)
+
+    def randomStats(self):
+        return {"HP":[self.health, self.health], "AP":[self.AP,self.AP],
+                "DF":self.calculateDF(),"DMG":self.calculateDMG()}
 
     def randomName(self):
         return choice(nameList[0]) + " " + choice(nameList[1])
@@ -296,5 +304,5 @@ class Bandit(NPC):
 
 
 
-all_NPCs = {"bandit": Bandit("name", "bandit", "B", 5,5,1, True),
+all_NPCs = {"bandit": Bandit("name", "bandit", "B", health=5,AP=2,Lv=1, isHostile=True),
            }
