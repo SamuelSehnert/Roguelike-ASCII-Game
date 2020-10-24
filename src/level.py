@@ -290,7 +290,6 @@ class Level:
             self.characterMenu = False
             return
 
-        
         # go into this if the character menu is currently open
         if self.characterMenu:
             if key == 119:
@@ -422,16 +421,12 @@ class Level:
                         self.alterTextBox("You close the door")
             self.alterInfoBar(self.interact.standingOn)
 
-
-
-
         #activate and deactivate visual mode
         elif key == 118 and not self.visualActive: #v
             self.fullDeactivation()
             self.visualMode()
         elif key == 118 and self.visualActive:
             self.fullDeactivation()
-
 
         #activate and deactivate interact mode
         elif key == 105 and not self.interactiveActive: #i
@@ -440,14 +435,12 @@ class Level:
         elif key == 105 and self.interactiveActive:
             self.fullDeactivation()
 
-
         #activate and deactivate attack mode
         elif key == 120 and not self.attackActive: #x
             self.fullDeactivation()
             self.attackMode()
         elif key == 120 and self.attackActive:
             self.fullDeactivation()
-
 
         #reverts the info bar back to the player when no mode is active
         if not self.visualActive and not self.interactiveActive and not self.attackActive:
@@ -698,9 +691,6 @@ class Level:
         else:
             self.textBox.append(text)
         return
-
-
-
 
 all_levels = {"level_1":Level("level_1.txt", {1:CHARACTER.all_NPCs["bandit"], 
                                               2:CHARACTER.all_NPCs["bandit"]})
